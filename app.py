@@ -250,27 +250,21 @@ def attach_match_context_and_team(df: pd.DataFrame, matches: pd.DataFrame) -> pd
         on="ID_match",
         how="left",
     )
-    def resolve_team(row):
-    side = row.get("side_number")
+    if "side_number" in out.columns:
+        side = pd.to_numeric(out["side_number"], errors="coerce")
+    else:
+        side = pd.Series(pd.NA, index=out.index)
 
-    if pd.isna(side):
-        return "Не определено"
+    out["Team"] = "Не определено"
 
-    try:
-        side = int(side)
-    except (TypeError, ValueError):
-        return "Не определено"
+    mask_home = side.eq(1)
+    mask_away = side.eq(2)
 
-    if side == 1:
-        return row.get("Home_Team", "Не определено")
+    if "Home_Team" in out.columns:
+        out.loc[mask_home, "Team"] = out.loc[mask_home, "Home_Team"].fillna("Не определено")
 
-    if side == 2:
-        return row.get("Away_Team", "Не определено")
-
-    return "Не определено"
-
-
-    out["Team"] = out.apply(resolve_team, axis=1)
+    if "Away_Team" in out.columns:
+        out.loc[mask_away, "Team"] = out.loc[mask_away, "Away_Team"].fillna("Не определено")
 
     return out
 
