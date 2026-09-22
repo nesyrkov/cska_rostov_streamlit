@@ -272,6 +272,8 @@ def attach_match_context_and_team(df: pd.DataFrame, matches: pd.DataFrame) -> pd
 
     out["Team"] = out.apply(resolve_team, axis=1)
 
+    return out
+
 
 def add_team_from_blank_separator(df: pd.DataFrame, matches: pd.DataFrame, name_col: str) -> pd.DataFrame:
     """Assign team by row blocks: before blank separator = home, after separator = away."""
