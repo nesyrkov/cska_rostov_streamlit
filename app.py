@@ -250,11 +250,27 @@ def attach_match_context_and_team(df: pd.DataFrame, matches: pd.DataFrame) -> pd
         on="ID_match",
         how="left",
     )
-    out["Team"] = out.apply(
-        lambda r: r["Home_Team"] if r.get("side_number") == 1 else (r["Away_Team"] if r.get("side_number") == 2 else "Не определено"),
-        axis=1,
-    )
-    return out
+    def resolve_team(row):
+    side = row.get("side_number")
+
+    if pd.isna(side):
+        return "Не определено"
+
+    try:
+        side = int(side)
+    except (TypeError, ValueError):
+        return "Не определено"
+
+    if side == 1:
+        return row.get("Home_Team", "Не определено")
+
+    if side == 2:
+        return row.get("Away_Team", "Не определено")
+
+    return "Не определено"
+
+
+    out["Team"] = out.apply(resolve_team, axis=1)
 
 
 def add_team_from_blank_separator(df: pd.DataFrame, matches: pd.DataFrame, name_col: str) -> pd.DataFrame:
